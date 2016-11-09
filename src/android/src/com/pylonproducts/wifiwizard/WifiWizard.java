@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,6 +68,20 @@ public class WifiWizard extends CordovaPlugin {
         else if(action.equals(SET_WIFI_ENABLED)) {
             return this.setWifiEnabled(callbackContext, data);
         }
+        else if(action.equals(START_SCAN)) {
+            if (wifiManager.isWifiEnabled() || wifiManager.isScanAlwaysAvailable()) {
+                return this.startScan(callbackContext);
+            }
+            callbackContext.error("Wifi is not enabled.");
+            return false;
+        }
+        else if(action.equals(GET_SCAN_RESULTS)) {
+            if (wifiManager.isWifiEnabled() || wifiManager.isScanAlwaysAvailable()) {
+                return this.getScanResults(callbackContext, data);
+            }
+            callbackContext.error("Wifi is not enabled.");
+            return false;
+        }
         else if (!wifiManager.isWifiEnabled()) {
             callbackContext.error("Wifi is not enabled.");
             return false;
@@ -86,12 +100,6 @@ public class WifiWizard extends CordovaPlugin {
         }
         else if(action.equals(LIST_NETWORKS)) {
             return this.listNetworks(callbackContext);
-        }
-        else if(action.equals(START_SCAN)) {
-            return this.startScan(callbackContext);
-        }
-        else if(action.equals(GET_SCAN_RESULTS)) {
-            return this.getScanResults(callbackContext, data);
         }
         else if(action.equals(DISCONNECT)) {
             return this.disconnect(callbackContext);
@@ -531,9 +539,9 @@ public class WifiWizard extends CordovaPlugin {
             Log.d(TAG, "WifiWizard: disconnectNetwork invalid data");
             return false;
         }
-        
+
         String status = "";
-        
+
         try {
             status = data.getString(0);
         }
@@ -542,11 +550,11 @@ public class WifiWizard extends CordovaPlugin {
             Log.d(TAG, e.getMessage());
             return false;
         }
-        
+
         if (wifiManager.setWifiEnabled(status.equals("true"))) {
             callbackContext.success();
             return true;
-        } 
+        }
         else {
             callbackContext.error("Cannot enable wifi");
             return false;
