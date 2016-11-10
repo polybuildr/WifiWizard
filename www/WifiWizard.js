@@ -211,6 +211,24 @@ var WifiWizard = {
     },
 
     /**
+     *  Check if we have permission to scan/list wifi
+     * @param 	win	callback function
+     * @param 	fail	callback function if error
+     */
+    hasScanPermission: function(win, fail) {
+        cordova.exec(win, fail, 'WifiWizard', 'hasScanPermission', []);
+    },
+
+    /**
+     *  Request permission to scan/list wifi
+     * @param 	win	callback function
+     * @param 	fail	callback function if error
+     */
+    requestScanPermission: function(win, fail) {
+        cordova.exec(win, fail, 'WifiWizard', 'requestScanPermission', []);
+    },
+
+    /**
      *  Start scanning wifi.
      * @param 	win	callback function
      * @param 	fail	callback function if error

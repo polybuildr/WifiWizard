@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.Manifest;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiConfiguration;
@@ -34,6 +35,8 @@ import android.util.Log;
 
 public class WifiWizard extends CordovaPlugin {
 
+    private static final String HAS_SCAN_PERMISSION = "hasScanPermission";
+    private static final String REQUEST_SCAN_PERMISSION = "requestScanPermission";
     private static final String ADD_NETWORK = "addNetwork";
     private static final String REMOVE_NETWORK = "removeNetwork";
     private static final String CONNECT_NETWORK = "connectNetwork";
@@ -46,6 +49,9 @@ public class WifiWizard extends CordovaPlugin {
     private static final String IS_WIFI_ENABLED = "isWifiEnabled";
     private static final String SET_WIFI_ENABLED = "setWifiEnabled";
     private static final String TAG = "WifiWizard";
+
+    private static final String WIFI_SCAN_PERMISSION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    private static final int WIFI_SCAN_PERMISSION_CODE = 42;
 
     private WifiManager wifiManager;
     private CallbackContext callbackContext;
@@ -62,7 +68,20 @@ public class WifiWizard extends CordovaPlugin {
 
         this.callbackContext = callbackContext;
 
-        if(action.equals(IS_WIFI_ENABLED)) {
+        if (action.equals(HAS_SCAN_PERMISSION)) {
+            boolean hasScanPermission = cordova.hasPermission(WIFI_SCAN_PERMISSION);
+            callbackContext.success(hasScanPermission ? 1 : 0);
+            return true;
+        }
+        else if (action.equals(REQUEST_SCAN_PERMISSION)) {
+            if (cordova.hasPermission(WIFI_SCAN_PERMISSION)) {
+                callbackContext.error("Already have scan permission");
+                return false;
+            }
+            cordova.requestPermission(this, WIFI_SCAN_PERMISSION_CODE, WIFI_SCAN_PERMISSION);
+            return true;
+        }
+        else if(action.equals(IS_WIFI_ENABLED)) {
             return this.isWifiEnabled(callbackContext);
         }
         else if(action.equals(SET_WIFI_ENABLED)) {
@@ -112,6 +131,20 @@ public class WifiWizard extends CordovaPlugin {
         }
 
         return false;
+    }
+
+    public void onRequestPermissionResult(
+        int requestCode, String[] permissions,
+        int[] grantResults) throws JSONException
+    {
+        for (int r: grantResults)
+        {
+            // PackageManager.PERMISSION_DENIED
+            if (r == -1) {
+                this.callbackContext.error("User did not grant wifi scan permission");
+                return;
+            }
+        }
     }
 
     /**
